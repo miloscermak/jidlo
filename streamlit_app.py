@@ -1,5 +1,5 @@
 import streamlit as st
-import anthropic
+import requests
 import base64
 import os
 from dotenv import load_dotenv
@@ -15,8 +15,8 @@ st.set_page_config(
 # Nadpis
 st.title("Analyzátor jídla")
 
-# Inicializace Anthropic klienta
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+API_KEY = os.getenv("ANTHROPIC_API_KEY")
+API_URL = "https://api.anthropic.com/v1/messages"
 
 # Upload souboru
 uploaded_file = st.file_uploader("Nahrajte fotografii jídla", type=['jpg', 'jpeg', 'png'])
@@ -46,44 +46,60 @@ if uploaded_file is not None:
 
             2. Odhadni přibližnou kalorickou hodnotu zobrazeného jídla. Vezmi v úvahu viditelné ingredience, velikost porce a předpokládaný způsob přípravy.
 
+            3. Promysli si dané jídlo a napiš o něm základní informaci.
+
             Svou odpověď napiš v následujícím formátu:
 
-            <odpoved>
-            <nazev_jidla>
+            Název jídla:
             [Zde uveď navržený název jídla v češtině]
-            </nazev_jidla>
+           
 
-            <kaloricka_hodnota>
+            Kalorická hodnota:
             [Zde uveď odhadovanou kalorickou hodnotu jídla v češtině, včetně zdůvodnění svého odhadu]
-            </kaloricka_hodnota>
-            </odpoved>"""
+            
+            Poznámky:
+            [Zde napiš vše, co o jídle víš]
+            """
 
             try:
-                message = client.messages.create(
-                    model="claude-3-sonnet-20240229",
-                    max_tokens=1000,
-                    messages=[{
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": prompt
-                            },
-                            {
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": uploaded_file.type,
-                                    "data": base64_image
+                headers = {
+                    "x-api-key": API_KEY,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json"
+                }
+
+                data = {
+                    "model": "claude-3-5-sonnet-20241022",
+                    "max_tokens": 5000,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": prompt
+                                },
+                                {
+                                    "type": "image",
+                                    "source": {
+                                        "type": "base64",
+                                        "media_type": uploaded_file.type,
+                                        "data": base64_image
+                                    }
                                 }
-                            }
-                        ]
-                    }]
-                )
+                            ]
+                        }
+                    ]
+                }
+
+                response = requests.post(API_URL, headers=headers, json=data)
                 
-                # Zobrazení výsledku
-                st.success("Analýza dokončena!")
-                st.write(message.content[0].text)
+                if response.status_code == 200:
+                    result = response.json()
+                    st.success("Analýza dokončena!")
+                    st.write(result['content'][0]['text'])
+                else:
+                    st.error(f"Chyba API: {response.status_code} - {response.text}")
                 
             except Exception as e:
                 st.error(f"Došlo k chybě při analýze: {str(e)}") 
