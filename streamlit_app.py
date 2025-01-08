@@ -28,7 +28,7 @@ st.set_page_config(
 )
 
 # Nadpis
-st.title("Co vidím?")
+st.title("Co máš na talíři?")
 
 # Upload souboru
 uploaded_file = st.file_uploader("Nahrajte fotografii", type=['jpg', 'jpeg', 'png', 'heic', 'HEIC'])
@@ -90,22 +90,55 @@ if uploaded_file is not None:
             with st.spinner('Probíhá analýza...'):
                 base64_image = base64.b64encode(image_data).decode("utf-8")
                 
-                prompt = """Prohlédni si pozorně následující fotografii jídla:
-<image>
+                prompt = """Here is the food image you need to analyze:
+
+<food_image>
 {{IMAGE}}
-</image>
-Pečlivě si prohlédni všechny detaily zobrazené na fotografii. Zaměř se na ingredience, způsob přípravy, velikost porce a celkový vzhled jídla.
-Na základě svého pozorování proveď následující úkoly:
-1. Navrhni vhodný název pro toto jídlo v češtině. Název by měl být výstižný a popisný.
-2. Odhadni přibližnou kalorickou hodnotu zobrazeného jídla. Vezmi v úvahu viditelné ingredience, velikost porce a předpokládaný způsob přípravy.
-3. Promysli si dané jídlo a napiš o něm základní informaci.
-Svou odpověď napiš v následujícím formátu:
+</food_image>
+
+Please examine the image carefully, paying close attention to the following aspects:
+- Visible ingredients
+- Preparation method
+- Portion size
+- Overall appearance and presentation
+
+Based on your observations, complete the following tasks:
+
+1. Suggest an appropriate name for the dish in Czech.
+2. Estimate the approximate caloric value of the depicted meal.
+3. Provide basic information about the dish.
+4. List potential health benefits associated with consuming this meal.
+5. Identify any potential health risks or concerns related to this dish.
+
+Before providing your final output, wrap your analysis inside <image_analysis> tags. In your analysis, include the following steps:
+
+1. List all visible ingredients, prepending each with a number (e.g., 1. Tomatoes, 2. Lettuce, etc.).
+2. Describe the likely preparation methods used for the dish.
+3. Estimate the portion size, considering standard serving sizes.
+4. Note any notable nutritional aspects (e.g., high protein, low fat, etc.) based on the visible ingredients.
+5. Estimate the nutritional content (protein, carbs, fats) based on the visible ingredients.
+6. Consider potential health benefits associated with the ingredients or preparation method.
+7. Identify any potential health risks (e.g., high sodium, excessive calories, allergens).
+8. Think about the cultural context and Czech cuisine to suggest an appropriate name for the dish.
+
+After your analysis, provide your final output in the following format:
+
 Název jídla:
-[Zde uveď navržený název jídla v češtině]
+[Suggested name for the dish in Czech]
+
 Kalorická hodnota:
-[Zde uveď odhadovanou kalorickou hodnotu jídla v češtině, včetně zdůvodnění svého odhadu]
+[Estimated caloric value of the meal in Czech, including a brief explanation of your estimate]
+
 Poznámky:
-[Zde napiš vše, co o jídle víš]
+[Basic information about the dish]
+
+Zdravotní přínosy:
+[List of potential health benefits associated with the meal]
+
+Možná zdravotní rizika:
+[List of potential health risks or concerns related to the dish]
+
+Please ensure that your response is in Czech and provides comprehensive, well-reasoned information based on your analysis of the image.
 """
 
                 try:
