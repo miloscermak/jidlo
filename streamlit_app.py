@@ -98,7 +98,7 @@ if uploaded_file is not None:
 
 Pečlivě si prohlédni všechny detaily zobrazené na fotografii. Zaměř se na ingredience, způsob přípravy, velikost porce a celkový vzhled jídla.
 
-Před poskytnutím konečné odpovědi proveď důkladnou analýzu v následujících krocích. Zapiš své myšlenky pro každý krok do <analyza_jidla> tagů:
+Před poskytnutím konečné odpovědi proveď důkladnou analýzu v následujících krocích. 
 
 1. Popis jídla:
    - Popiš, co vidíš na fotografii, včetně textury, barvy a prezentace
