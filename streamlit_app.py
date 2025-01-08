@@ -86,59 +86,68 @@ if uploaded_file is not None:
         # Odstraníme všechny debugovací výpisy
         
         # Tlačítko pro analýzu
-        if st.button("Chci si přečíst popisek"):
+        if st.button("Chci o tom jídle vědět všechno!"):
             with st.spinner('Probíhá analýza...'):
                 base64_image = base64.b64encode(image_data).decode("utf-8")
                 
-                prompt = """Here is the food image you need to analyze:
+                prompt = """Jsi zkušený odborník na analýzu jídla a výživu. Tvým úkolem je analyzovat fotografii jídla a poskytnout detailní informace o něm. Zde je fotografie jídla, kterou budeš analyzovat:
 
-<food_image>
+<fotografie_jidla>
 {{IMAGE}}
-</food_image>
+</fotografie_jidla>
 
-Please examine the image carefully, paying close attention to the following aspects:
-- Visible ingredients
-- Preparation method
-- Portion size
-- Overall appearance and presentation
+Pečlivě si prohlédni všechny detaily zobrazené na fotografii. Zaměř se na ingredience, způsob přípravy, velikost porce a celkový vzhled jídla.
 
-Based on your observations, complete the following tasks:
+Před poskytnutím konečné odpovědi proveď důkladnou analýzu v následujících krocích. Zapiš své myšlenky pro každý krok do <analyza_jidla> tagů:
 
-1. Suggest an appropriate name for the dish in Czech.
-2. Estimate the approximate caloric value of the depicted meal.
-3. Provide basic information about the dish.
-4. List potential health benefits associated with consuming this meal.
-5. Identify any potential health risks or concerns related to this dish.
+1. Popis jídla:
+   - Popiš, co vidíš na fotografii, včetně textury, barvy a prezentace
+   - Identifikuj hlavní ingredience
+   - Odhadni způsob přípravy
+   - Odhadni přesnou velikost porce
 
-Before providing your final output, wrap your analysis inside <image_analysis> tags. In your analysis, include the following steps:
+2. Kulturní kontext:
+   - Zvaž možný původ jídla a jeho kulturní význam
+   - Navrhni potenciální variace tohoto jídla
 
-1. List all visible ingredients, prepending each with a number (e.g., 1. Tomatoes, 2. Lettuce, etc.).
-2. Describe the likely preparation methods used for the dish.
-3. Estimate the portion size, considering standard serving sizes.
-4. Note any notable nutritional aspects (e.g., high protein, low fat, etc.) based on the visible ingredients.
-5. Estimate the nutritional content (protein, carbs, fats) based on the visible ingredients.
-6. Consider potential health benefits associated with the ingredients or preparation method.
-7. Identify any potential health risks (e.g., high sodium, excessive calories, allergens).
-8. Think about the cultural context and Czech cuisine to suggest an appropriate name for the dish.
+3. Návrh názvu:
+   - Na základě pozorování navrhni vhodný český název pro toto jídlo
+   - Ujisti se, že název je výstižný a popisný
 
-After your analysis, provide your final output in the following format:
+4. Odhad kalorické hodnoty:
+   - Zvaž viditelné ingredience a jejich přibližné množství
+   - Vezmi v úvahu odhadnutou velikost porce
+   - Odhadni přibližnou kalorickou hodnotu a zdůvodni svůj odhad
+
+5. Základní informace:
+   - Shrň klíčové informace o jídle (např. původ, typické použití, variace)
+
+6. Zdravotní benefity:
+   - Identifikuj potenciální pozitivní účinky jídla na zdraví
+   - Zvaž nutriční hodnotu jednotlivých ingrediencí
+
+7. Zdravotní rizika:
+   - Zvaž možná zdravotní rizika spojená s konzumací tohoto jídla
+   - Vezmi v úvahu alergeny, vysoký obsah tuku nebo cukru, apod.
+
+Na základě své analýzy nyní poskytni strukturovanou odpověď v následujícím formátu:
 
 Název jídla:
-[Suggested name for the dish in Czech]
+[Navržený název jídla v češtině]
 
 Kalorická hodnota:
-[Estimated caloric value of the meal in Czech, including a brief explanation of your estimate]
+[Odhadovaná kalorická hodnota jídla v češtině, včetně zdůvodnění odhadu]
 
 Poznámky:
-[Basic information about the dish]
+[Základní informace o jídle]
 
-Zdravotní přínosy:
-[List of potential health benefits associated with the meal]
+Zdravotní benefity:
+[Seznam potenciálních pozitivních účinků na zdraví]
 
-Možná zdravotní rizika:
-[List of potential health risks or concerns related to the dish]
+Zdravotní rizika:
+[Seznam možných zdravotních rizik]
 
-Please ensure that your response is in Czech and provides comprehensive, well-reasoned information based on your analysis of the image.
+Ujisti se, že tvá odpověď je v češtině a obsahuje všechny požadované sekce. Buď konkrétní a výstižný ve svých popisech a odhadech.
 """
 
                 try:
