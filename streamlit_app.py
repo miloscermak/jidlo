@@ -31,7 +31,7 @@ st.set_page_config(
 st.title("Co máš na talíři?")
 
 # Upload souboru
-uploaded_file = st.file_uploader("Nahrajte fotografii", type=['jpg', 'jpeg', 'png', 'heic', 'HEIC'])
+uploaded_file = st.file_uploader("Nahrajte fotografii", type=['jpg', 'jpeg', 'png', 'heic'])
 
 def process_image(uploaded_file):
     """Funkce pro zpracování různých formátů obrázků"""
