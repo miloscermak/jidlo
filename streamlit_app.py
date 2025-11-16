@@ -169,7 +169,7 @@ Ujisti se, že tvá odpověď je v češtině a obsahuje všechny požadované s
                     }
 
                     data = {
-                        "model": "claude-sonnet-4-5-20250929",
+                        "model": "claude-sonnet-4-5",
                         "max_tokens": 5000,
                         "messages": [
                             {
