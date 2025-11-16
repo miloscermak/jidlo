@@ -3,7 +3,7 @@ import requests
 import base64
 import os
 from dotenv import load_dotenv
-from PIL import Image
+from PIL import Image, ImageOps
 from pillow_heif import register_heif_opener
 import io
 
@@ -41,51 +41,48 @@ def process_image(uploaded_file):
         temp_bytes = uploaded_file.getvalue()
         image = Image.open(io.BytesIO(temp_bytes))
 
-        # Kontrola a aplikace orientace z EXIF
+        # Automatická aplikace EXIF orientace
         try:
-            if hasattr(image, '_getexif') and image._getexif():
-                exif = image._getexif()
-                if exif is not None:
-                    orientation = exif.get(274)  # 274 je tag pro orientaci
-                    if orientation is not None:
-                        # Rotace podle EXIF orientace
-                        if orientation == 3:
-                            image = image.rotate(180, expand=True)
-                        elif orientation == 6:
-                            image = image.rotate(270, expand=True)
-                        elif orientation == 8:
-                            image = image.rotate(90, expand=True)
-
-        except Exception as e:
-            # Tichá chyba - orientace není kritická
+            image = ImageOps.exif_transpose(image)
+        except Exception:
+            # Pokud selže, pokračujeme s původním obrázkem
             pass
 
         # Konverze RGBA na RGB (JPEG nepodporuje průhlednost)
-        if image.mode in ('RGBA', 'LA', 'P'):
+        if image.mode in ('RGBA', 'LA'):
             # Vytvoříme bílé pozadí
             background = Image.new('RGB', image.size, (255, 255, 255))
-            if image.mode == 'P':
-                image = image.convert('RGBA')
-            background.paste(image, mask=image.split()[-1] if image.mode in ('RGBA', 'LA') else None)
+            background.paste(image, mask=image.split()[-1])
             image = background
-        elif image.mode != 'RGB':
+        elif image.mode == 'P':
+            # Paletový režim - konvertujeme na RGB
+            image = image.convert('RGB')
+        elif image.mode not in ('RGB', 'L'):
+            # Jakýkoliv jiný režim konvertujeme na RGB
             image = image.convert('RGB')
 
         # Konverze do JPEG pro další zpracování
-        with io.BytesIO() as bio:
-            # Uložení jako JPEG s rozumnou kvalitou
-            image.save(bio, format='JPEG', quality=95)
-            return bio.getvalue()
+        bio = io.BytesIO()
+        # Uložení jako JPEG s rozumnou kvalitou
+        image.save(bio, format='JPEG', quality=95)
+        bio.seek(0)
+        return bio.getvalue()
 
     except Exception as e:
         st.error(f"Chyba při zpracování obrázku: {str(e)}")
+        import traceback
+        st.error(f"Detail: {traceback.format_exc()}")
         return None
 
 if uploaded_file is not None:
     try:
         # Zpracování obrázku
         image_data = process_image(uploaded_file)
-        
+
+        if image_data is None:
+            st.error("Nelze zpracovat obrázek. Zkuste prosím jiný soubor.")
+            st.stop()
+
         # Zobrazení náhledu
         image = Image.open(io.BytesIO(image_data))
         st.image(image, caption="Náhled obrázku", use_container_width=True)
