@@ -43,22 +43,29 @@ def process_image(uploaded_file):
 
         # Automatická aplikace EXIF orientace
         try:
-            image = ImageOps.exif_transpose(image)
+            transposed = ImageOps.exif_transpose(image)
+            if transposed is not None:
+                image = transposed
         except Exception:
             # Pokud selže, pokračujeme s původním obrázkem
             pass
 
-        # Konverze RGBA na RGB (JPEG nepodporuje průhlednost)
+        # Konverze všech režimů na RGB pro JPEG
+        # JPEG nepodporuje průhlednost ani paletové režimy
         if image.mode in ('RGBA', 'LA'):
-            # Vytvoříme bílé pozadí
+            # Vytvoříme bílé pozadí pro obrázky s průhledností
             background = Image.new('RGB', image.size, (255, 255, 255))
-            background.paste(image, mask=image.split()[-1])
+            if image.mode == 'RGBA':
+                background.paste(image, mask=image.split()[3])  # Alpha kanál
+            elif image.mode == 'LA':
+                background.paste(image, mask=image.split()[1])  # Alpha kanál
             image = background
-        elif image.mode == 'P':
-            # Paletový režim - konvertujeme na RGB
+        elif image.mode != 'RGB':
+            # Všechny ostatní režimy (P, L, CMYK, atd.) konvertujeme na RGB
             image = image.convert('RGB')
-        elif image.mode not in ('RGB', 'L'):
-            # Jakýkoliv jiný režim konvertujeme na RGB
+
+        # Finální kontrola před uložením
+        if image.mode != 'RGB':
             image = image.convert('RGB')
 
         # Konverze do JPEG pro další zpracování
