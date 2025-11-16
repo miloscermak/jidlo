@@ -36,16 +36,14 @@ uploaded_file = st.file_uploader("Nahrajte fotografii", type=['jpg', 'jpeg', 'pn
 def process_image(uploaded_file):
     """Funkce pro zpracování různých formátů obrázků"""
     try:
-        if uploaded_file.type in ['image/heic', 'image/heif']:
-            # Načtení HEIC souboru
-            temp_bytes = uploaded_file.getvalue()
-            image = Image.open(io.BytesIO(temp_bytes))
-        else:
-            image = Image.open(uploaded_file)
+        # Načtení obrázku
+        uploaded_file.seek(0)  # Ujistíme se, že začínáme od začátku souboru
+        temp_bytes = uploaded_file.getvalue()
+        image = Image.open(io.BytesIO(temp_bytes))
 
         # Kontrola a aplikace orientace z EXIF
         try:
-            if hasattr(image, '_getexif'):
+            if hasattr(image, '_getexif') and image._getexif():
                 exif = image._getexif()
                 if exif is not None:
                     orientation = exif.get(274)  # 274 je tag pro orientaci
@@ -59,15 +57,24 @@ def process_image(uploaded_file):
                             image = image.rotate(90, expand=True)
 
         except Exception as e:
-            st.warning(f"Nelze určit orientaci obrázku: {str(e)}")
+            # Tichá chyba - orientace není kritická
+            pass
+
+        # Konverze RGBA na RGB (JPEG nepodporuje průhlednost)
+        if image.mode in ('RGBA', 'LA', 'P'):
+            # Vytvoříme bílé pozadí
+            background = Image.new('RGB', image.size, (255, 255, 255))
+            if image.mode == 'P':
+                image = image.convert('RGBA')
+            background.paste(image, mask=image.split()[-1] if image.mode in ('RGBA', 'LA') else None)
+            image = background
+        elif image.mode != 'RGB':
+            image = image.convert('RGB')
 
         # Konverze do JPEG pro další zpracování
         with io.BytesIO() as bio:
-            # Zachování EXIF dat při ukládání
-            if 'exif' in image.info:
-                image.save(bio, format='JPEG', exif=image.info['exif'])
-            else:
-                image.save(bio, format='JPEG')
+            # Uložení jako JPEG s rozumnou kvalitou
+            image.save(bio, format='JPEG', quality=95)
             return bio.getvalue()
 
     except Exception as e:
